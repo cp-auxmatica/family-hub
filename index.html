@@ -136,8 +136,8 @@
     <!-- Main Content Area -->
     <main class="flex-1 h-full overflow-y-auto no-scrollbar p-8 md:p-12" id="main-content">
         
-        <!-- Dashboard View -->
-        <div id="dashboard-view" class="max-w-7xl mx-auto space-y-10">
+        <!-- Dashboard View - Width constraints removed to fit all available space -->
+        <div id="dashboard-view" class="w-full space-y-10">
             
             <!-- Header: Contextual Greeting -->
             <header class="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
@@ -274,7 +274,7 @@
         </div>
 
         <!-- Placeholders for other views (Full implementations would go here) -->
-        <div id="calendar-view" class="hidden h-full">
+        <div id="calendar-view" class="hidden h-full w-full">
              <div class="glass-card h-full flex flex-col items-center justify-center text-slate-300">
                 <i class="fas fa-calendar-alt text-8xl mb-6 opacity-20"></i>
                 <h2 class="text-3xl font-bold text-slate-400">Monthly Calendar</h2>
@@ -282,11 +282,11 @@
              </div>
         </div>
 
-        <div id="tasks-view" class="hidden h-full">
+        <div id="tasks-view" class="hidden h-full w-full">
             <!-- Full Task Manager content -->
         </div>
 
-        <div id="meals-view" class="hidden h-full">
+        <div id="meals-view" class="hidden h-full w-full">
             <!-- Full Meal Planner content -->
         </div>
 
