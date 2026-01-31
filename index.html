@@ -106,7 +106,7 @@
         </div>
     </div>
 
-    <!-- Sidebar Navigation (Optimized for Tablet Touch) -->
+    <!-- Sidebar Navigation -->
     <aside class="w-28 md:w-64 bg-white h-full border-r border-slate-200 flex flex-col py-10 flex-shrink-0">
         <div class="px-8 mb-12">
             <h1 class="text-2xl font-black text-blue-600 hidden md:block">FamilyHub<span class="text-slate-300">.</span></h1>
@@ -173,26 +173,69 @@
             <!-- Grid Layout -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 
-                <!-- Left Column -->
-                <div class="lg:col-span-8 space-y-8">
+                <!-- Main Area (Left + Center combined in wide view) -->
+                <div class="lg:col-span-9 space-y-8">
                     
                     <!-- Kids' Week Strip -->
                     <section class="glass-card p-4 flex gap-2 justify-between items-stretch bg-white/50" id="week-strip">
                         <!-- Rendered by JS -->
                     </section>
 
-                    <!-- Today's Timeline - More compact -->
-                    <section class="glass-card p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold flex items-center text-slate-800">
-                                <i class="fas fa-calendar-check text-blue-500 mr-3"></i> Today's Events
-                            </h3>
-                            <button class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-lg font-bold text-xs active:scale-95 transition">+ Add</button>
+                    <!-- Row: Events & Status info side-by-side -->
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        
+                        <!-- Today's Timeline -->
+                        <section class="glass-card p-6 h-full flex flex-col">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-bold flex items-center text-slate-800">
+                                    <i class="fas fa-calendar-check text-blue-500 mr-3"></i> Today's Events
+                                </h3>
+                                <button class="bg-blue-50 text-blue-600 px-4 py-1.5 rounded-lg font-bold text-xs active:scale-95 transition">+ Add</button>
+                            </div>
+                            <div class="space-y-4 overflow-y-auto flex-1 no-scrollbar" id="schedule-list">
+                                <!-- Items are rendered via JS -->
+                            </div>
+                        </section>
+
+                        <!-- Combined Dinner & Family Status Column -->
+                        <div class="space-y-8 h-full">
+                            <!-- Dinner Tonight -->
+                            <section class="glass-card p-6 relative overflow-hidden group">
+                                <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full group-hover:scale-110 transition duration-700"></div>
+                                <h3 class="text-lg font-bold mb-3 relative z-10 text-slate-800">
+                                    <i class="fas fa-utensils text-emerald-500 mr-2"></i> Dinner Plan
+                                </h3>
+                                <div class="relative z-10">
+                                    <h4 class="text-lg font-bold text-slate-900 leading-tight">Beef & Broccoli Stir Fry</h4>
+                                    <p class="text-slate-500 font-medium text-xs mt-1">Prep starts at 5:30 PM</p>
+                                    <div class="mt-4 flex flex-wrap gap-2">
+                                        <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded-full">30 MINS</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Quick Status -->
+                            <section class="glass-card p-6">
+                                <h3 class="text-lg font-bold mb-4 text-slate-800">Family Status</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-md shadow-md shadow-blue-100">M</div>
+                                        <div class="ml-3">
+                                            <p class="font-bold text-slate-900 text-sm">Sarah (Mom)</p>
+                                            <p class="text-[10px] font-medium text-emerald-600">At Office</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white font-bold text-md shadow-md shadow-slate-200">D</div>
+                                        <div class="ml-3">
+                                            <p class="font-bold text-slate-900 text-sm">Mark (Dad)</p>
+                                            <p class="text-[10px] font-medium text-blue-500">Home Office</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
                         </div>
-                        <div class="space-y-4" id="schedule-list">
-                            <!-- Items are rendered via JS -->
-                        </div>
-                    </section>
+                    </div>
 
                     <!-- Tasks & Groceries Sub-grid -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -216,8 +259,8 @@
                     </div>
                 </div>
 
-                <!-- Right Column -->
-                <div class="lg:col-span-4 space-y-8">
+                <!-- Right Sidebar (Sidebar Info) -->
+                <div class="lg:col-span-3 space-y-8">
                     
                     <!-- Weather Context -->
                     <section class="glass-card p-8 bg-gradient-to-br from-amber-400 to-orange-500 text-white border-0 shadow-lg shadow-orange-200">
@@ -229,7 +272,7 @@
                             </div>
                             <i class="fas fa-sun text-5xl text-white/40"></i>
                         </div>
-                        <div class="mt-8 grid grid-cols-4 gap-2 text-center">
+                        <div class="mt-8 grid grid-cols-4 gap-1 text-center">
                             <div class="bg-white/10 py-2 rounded-xl"><p class="text-[9px] opacity-70">12p</p><p class="font-bold text-sm">75°</p></div>
                             <div class="bg-white/20 py-2 rounded-xl border border-white/30"><p class="text-[9px] opacity-70">3p</p><p class="font-bold text-sm">78°</p></div>
                             <div class="bg-white/10 py-2 rounded-xl"><p class="text-[9px] opacity-70">6p</p><p class="font-bold text-sm">71°</p></div>
@@ -237,40 +280,10 @@
                         </div>
                     </section>
 
-                    <!-- Dinner Tonight -->
-                    <section class="glass-card p-6 relative overflow-hidden group">
-                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full group-hover:scale-110 transition duration-700"></div>
-                        <h3 class="text-lg font-bold mb-3 relative z-10 text-slate-800">
-                            <i class="fas fa-utensils text-emerald-500 mr-2"></i> Dinner Plan
-                        </h3>
-                        <div class="relative z-10">
-                            <h4 class="text-lg font-bold text-slate-900 leading-tight">Beef & Broccoli Stir Fry</h4>
-                            <p class="text-slate-500 font-medium text-xs mt-1">Prep starts at 5:30 PM</p>
-                            <div class="mt-4 flex flex-wrap gap-2">
-                                <span class="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded-full">30 MINS</span>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- Quick Status -->
-                    <section class="glass-card p-6">
-                        <h3 class="text-lg font-bold mb-4 text-slate-800">Family Status</h3>
-                        <div class="space-y-4">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-md shadow-md shadow-blue-100">M</div>
-                                <div class="ml-3">
-                                    <p class="font-bold text-slate-900 text-sm">Sarah (Mom)</p>
-                                    <p class="text-[10px] font-medium text-emerald-600">At Office</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-white font-bold text-md shadow-md shadow-slate-200">D</div>
-                                <div class="ml-3">
-                                    <p class="font-bold text-slate-900 text-sm">Mark (Dad)</p>
-                                    <p class="text-[10px] font-medium text-blue-500">Home Office</p>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Placeholder for extra widgets (e.g., Smart Home, Energy, Notes) -->
+                    <section class="glass-card p-6 border-dashed border-2 border-slate-200 flex flex-col items-center justify-center opacity-40 h-32">
+                        <i class="fas fa-plus-circle text-slate-300 text-2xl"></i>
+                        <span class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Add Widget</span>
                     </section>
 
                 </div>
@@ -297,7 +310,8 @@
             schedule: [
                 { time: '08:30', title: 'School Drop-off', sub: 'Mom driving Sofia', color: 'blue' },
                 { time: '10:00', title: 'Groceries Pick-up', sub: 'HEB Order Ready', color: 'emerald' },
-                { time: '16:30', title: 'Soccer Practice', sub: 'Leo @ Field 4', color: 'orange' }
+                { time: '16:30', title: 'Soccer Practice', sub: 'Leo @ Field 4', color: 'orange' },
+                { time: '18:15', title: 'Pick up Sofia', sub: 'Ballet finishes', color: 'pink' }
             ],
             tasks: [
                 { id: 1, text: 'Pay water bill', done: false },
@@ -337,7 +351,7 @@
                 <div class="flex items-start p-4 hover:bg-slate-50 transition rounded-2xl border-l-4 border-${item.color}-500 bg-white shadow-sm">
                     <span class="w-14 text-sm font-black text-slate-300 mt-0.5">${item.time}</span>
                     <div class="ml-4">
-                        <h4 class="text-base font-extrabold text-slate-800">${item.title}</h4>
+                        <h4 class="text-base font-extrabold text-slate-800 leading-tight">${item.title}</h4>
                         <p class="text-slate-400 font-medium text-[11px]">${item.sub}</p>
                     </div>
                 </div>
