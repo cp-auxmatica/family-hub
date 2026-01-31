@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FamilyHub OS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Firebase SDKs (Placeholder for actual implementation) -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-main: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --accent: #3b82f6;
+            --text-main: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+            /* Prevent text selection and long-press menus for a native feel */
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-item {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .sidebar-item.active {
+            background-color: #eff6ff;
+            color: var(--accent);
+            border-right: 4px solid var(--accent);
+        }
+
+        .clock-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+            color: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        #screensaver {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background-size: cover;
+            background-position: center;
+            transition: opacity 1.5s ease;
+            cursor: pointer;
+        }
+
+        /* Loading/Sync Indicator */
+        .sync-status {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+        }
+    </style>
+</head>
+<body class="flex">
+
+    <!-- Screensaver Overlay (Photo Frame Mode) -->
+    <div id="screensaver" class="flex flex-col justify-end p-16 animate-fade-in">
+        <div class="bg-black/30 backdrop-blur-xl p-8 rounded-3xl inline-block self-start text-white border border-white/20">
+            <h1 id="screensaver-time" class="text-7xl font-bold">12:00</h1>
+            <p id="screensaver-date" class="text-2xl opacity-90">Friday, January 30</p>
+        </div>
+    </div>
+
+    <!-- Sidebar Navigation (Optimized for Tablet Touch) -->
+    <aside class="w-28 md:w-64 bg-white h-full border-r border-slate-200 flex flex-col py-10 flex-shrink-0">
+        <div class="px-8 mb-12">
+            <h1 class="text-2xl font-black text-blue-600 hidden md:block">FamilyHub<span class="text-slate-300">.</span></h1>
+            <div class="md:hidden flex justify-center"><i class="fas fa-home text-3xl text-blue-600"></i></div>
+        </div>
+
+        <nav class="flex-1 space-y-2">
+            <div onclick="switchTab('dashboard')" id="nav-dashboard" class="sidebar-item active flex items-center px-8 py-5">
+                <i class="fas fa-th-large w-6 text-2xl"></i>
+                <span class="ml-4 font-semibold hidden md:block text-lg">Dashboard</span>
+            </div>
+            <div onclick="switchTab('calendar')" id="nav-calendar" class="sidebar-item flex items-center px-8 py-5 text-slate-400">
+                <i class="fas fa-calendar-alt w-6 text-2xl"></i>
+                <span class="ml-4 font-semibold hidden md:block text-lg">Calendar</span>
+            </div>
+            <div onclick="switchTab('tasks')" id="nav-tasks" class="sidebar-item flex items-center px-8 py-5 text-slate-400">
+                <i class="fas fa-list-check w-6 text-2xl"></i>
+                <span class="ml-4 font-semibold hidden md:block text-lg">Tasks</span>
+            </div>
+            <div onclick="switchTab('meals')" id="nav-meals" class="sidebar-item flex items-center px-8 py-5 text-slate-400">
+                <i class="fas fa-utensils w-6 text-2xl"></i>
+                <span class="ml-4 font-semibold hidden md:block text-lg">Meals</span>
+            </div>
+            <div onclick="startScreensaver()" class="sidebar-item flex items-center px-8 py-5 text-slate-400">
+                <i class="fas fa-image w-6 text-2xl"></i>
+                <span class="ml-4 font-semibold hidden md:block text-lg">Photo Frame</span>
+            </div>
+        </nav>
+
+        <div class="px-8 mt-auto space-y-4">
+            <div class="flex items-center space-x-2">
+                <span class="sync-status">
+                    <i class="fas fa-cloud mr-1"></i> Synced
+                </span>
+            </div>
+            <div class="sidebar-item flex items-center py-4 text-slate-300 hover:text-slate-500">
+                <i class="fas fa-cog w-6 text-xl"></i>
+                <span class="ml-4 font-medium hidden md:block">System Settings</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 h-full overflow-y-auto no-scrollbar p-8 md:p-12" id="main-content">
+        
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="max-w-7xl mx-auto space-y-10">
+            
+            <!-- Header: Contextual Greeting -->
+            <header class="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+                <div>
+                    <h2 class="text-4xl font-extrabold text-slate-900 tracking-tight" id="greeting">Good Morning!</h2>
+                    <p class="text-slate-500 text-xl mt-2 font-medium" id="current-date-full">Friday, January 30, 2026</p>
+                </div>
+                <div class="clock-gradient px-10 py-6 rounded-[2.5rem] flex flex-col items-center justify-center min-w-[280px]">
+                    <span class="text-5xl font-black tracking-tighter" id="clock-display">08:45 AM</span>
+                    <div class="flex items-center mt-2 text-blue-200 font-medium">
+                        <i class="fas fa-cloud-sun mr-3 text-xl"></i>
+                        <span>72°F &bull; Partly Cloudy</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Grid Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                
+                <!-- Left Column: Primary Schedule (8 cols) -->
+                <div class="lg:col-span-8 space-y-10">
+                    
+                    <!-- Today's Timeline -->
+                    <section class="glass-card p-8">
+                        <div class="flex justify-between items-center mb-8">
+                            <h3 class="text-2xl font-bold flex items-center text-slate-800">
+                                <i class="fas fa-calendar-check text-blue-500 mr-4"></i> Today's Overview
+                            </h3>
+                            <button class="bg-blue-50 text-blue-600 px-6 py-2 rounded-xl font-bold text-sm active:scale-95 transition">Add Event</button>
+                        </div>
+                        <div class="space-y-6" id="schedule-list">
+                            <!-- Items are rendered via JS for easier data-syncing later -->
+                        </div>
+                    </section>
+
+                    <!-- Two-column sub-grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                        <section class="glass-card p-8">
+                            <h3 class="text-2xl font-bold mb-8 flex items-center text-slate-800">
+                                <i class="fas fa-clipboard-list text-purple-500 mr-4"></i> To-Do
+                            </h3>
+                            <div class="space-y-4" id="task-list">
+                                <!-- Tasks rendered via JS -->
+                            </div>
+                        </section>
+
+                        <section class="glass-card p-8">
+                            <h3 class="text-2xl font-bold mb-8 flex items-center text-slate-800">
+                                <i class="fas fa-cart-shopping text-pink-500 mr-4"></i> Groceries
+                            </h3>
+                            <div class="space-y-4" id="grocery-list">
+                                <!-- Groceries rendered via JS -->
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- Right Column: Sidebar Info (4 cols) -->
+                <div class="lg:col-span-4 space-y-10">
+                    
+                    <!-- Weather Context -->
+                    <section class="glass-card p-8 bg-gradient-to-br from-amber-400 to-orange-500 text-white border-0 shadow-lg shadow-orange-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-orange-100 font-bold uppercase tracking-widest text-xs">Outdoor Condition</p>
+                                <h3 class="text-5xl font-black mt-2">72°</h3>
+                                <p class="text-orange-500 bg-white/90 px-3 py-1 rounded-lg inline-block mt-3 text-sm font-bold">UV Index: High</p>
+                            </div>
+                            <i class="fas fa-sun text-6xl text-white/40"></i>
+                        </div>
+                        <div class="mt-10 grid grid-cols-4 gap-2 text-center">
+                            <div class="bg-white/10 py-3 rounded-2xl">
+                                <p class="text-[10px] uppercase font-bold opacity-70">12p</p>
+                                <p class="font-bold">75°</p>
+                            </div>
+                            <div class="bg-white/10 py-3 rounded-2xl border border-white/30">
+                                <p class="text-[10px] uppercase font-bold opacity-70">3p</p>
+                                <p class="font-bold">78°</p>
+                            </div>
+                            <div class="bg-white/10 py-3 rounded-2xl">
+                                <p class="text-[10px] uppercase font-bold opacity-70">6p</p>
+                                <p class="font-bold">71°</p>
+                            </div>
+                            <div class="bg-white/10 py-3 rounded-2xl">
+                                <p class="text-[10px] uppercase font-bold opacity-70">9p</p>
+                                <p class="font-bold">64°</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Dinner Tonight -->
+                    <section class="glass-card p-8 relative overflow-hidden group">
+                        <div class="absolute -right-4 -top-4 w-32 h-32 bg-emerald-50 rounded-full group-hover:scale-110 transition duration-700"></div>
+                        <h3 class="text-2xl font-bold mb-4 relative z-10 text-slate-800">
+                            <i class="fas fa-utensils text-emerald-500 mr-3"></i> Dinner Plan
+                        </h3>
+                        <div class="relative z-10">
+                            <h4 class="text-xl font-bold text-slate-900">Beef & Broccoli Stir Fry</h4>
+                            <p class="text-slate-500 font-medium mt-1">Prep starts at 5:30 PM</p>
+                            <div class="mt-6 flex flex-wrap gap-2">
+                                <span class="px-4 py-1.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">30 Mins</span>
+                                <span class="px-4 py-1.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">High Protein</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Quick Status -->
+                    <section class="glass-card p-8">
+                        <h3 class="text-xl font-bold mb-6 text-slate-800">Family Location</h3>
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-blue-100">M</div>
+                                    <div class="ml-4">
+                                        <p class="font-bold text-slate-900">Sarah (Mom)</p>
+                                        <p class="text-xs font-medium text-emerald-600"><i class="fas fa-location-dot mr-1"></i> At Office</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-slate-200">D</div>
+                                    <div class="ml-4">
+                                        <p class="font-bold text-slate-900">Mark (Dad)</p>
+                                        <p class="text-xs font-medium text-blue-500"><i class="fas fa-home mr-1"></i> Working From Home</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Placeholders for other views (Full implementations would go here) -->
+        <div id="calendar-view" class="hidden h-full">
+             <div class="glass-card h-full flex flex-col items-center justify-center text-slate-300">
+                <i class="fas fa-calendar-alt text-8xl mb-6 opacity-20"></i>
+                <h2 class="text-3xl font-bold text-slate-400">Monthly Calendar</h2>
+                <p class="mt-2">Connecting to Google/iCloud Calendar...</p>
+             </div>
+        </div>
+
+        <div id="tasks-view" class="hidden h-full">
+            <!-- Full Task Manager content -->
+        </div>
+
+        <div id="meals-view" class="hidden h-full">
+            <!-- Full Meal Planner content -->
+        </div>
+
+    </main>
+
+    <script>
+        // --- Data State (This would be synced with Firebase) ---
+        const familyData = {
+            schedule: [
+                { time: '08:30', title: 'School Drop-off', sub: 'Mom driving Sofia', color: 'blue' },
+                { time: '10:00', title: 'Groceries Pick-up', sub: 'HEB Order Ready', color: 'emerald' },
+                { time: '16:30', title: 'Soccer Practice', sub: 'Leo @ Field 4', color: 'orange' },
+                { time: '19:00', title: 'Math Tutor', sub: 'Sofia Zoom Call', color: 'purple' }
+            ],
+            tasks: [
+                { id: 1, text: 'Pay monthly water bill', done: false },
+                { id: 2, text: 'Renew car registration', done: true },
+                { id: 3, text: 'Call plumber for leak', done: false }
+            ],
+            groceries: ['Oat Milk', 'Fresh Blueberries', 'Avocados', 'Paper Towels']
+        };
+
+        // --- UI Rendering ---
+        function renderDashboard() {
+            // Render Schedule
+            const scheduleList = document.getElementById('schedule-list');
+            scheduleList.innerHTML = familyData.schedule.map(item => `
+                <div class="flex items-start p-5 hover:bg-slate-50 transition rounded-3xl border-l-8 border-${item.color}-500 bg-white shadow-sm">
+                    <span class="w-20 text-lg font-black text-slate-300">${item.time}</span>
+                    <div class="ml-6">
+                        <h4 class="text-xl font-extrabold text-slate-800">${item.title}</h4>
+                        <p class="text-slate-500 font-medium mt-1">${item.sub}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            // Render Tasks
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = familyData.tasks.map(task => `
+                <div class="flex items-center p-4 hover:bg-slate-50 rounded-2xl cursor-pointer" onclick="toggleTask(${task.id})">
+                    <div class="w-8 h-8 rounded-xl border-2 flex items-center justify-center ${task.done ? 'bg-purple-500 border-purple-500' : 'border-slate-200'}">
+                        ${task.done ? '<i class="fas fa-check text-white text-xs"></i>' : ''}
+                    </div>
+                    <span class="ml-4 text-lg ${task.done ? 'text-slate-300 line-through' : 'text-slate-700 font-medium'}">${task.text}</span>
+                </div>
+            `).join('');
+
+            // Render Groceries
+            const groceryList = document.getElementById('grocery-list');
+            groceryList.innerHTML = familyData.groceries.map(item => `
+                <div class="flex items-center justify-between p-4 bg-pink-50/50 rounded-2xl group active:bg-pink-100">
+                    <span class="text-lg font-semibold text-slate-700">${item}</span>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-pink-500 shadow-sm"><i class="fas fa-plus"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function toggleTask(id) {
+            const task = familyData.tasks.find(t => t.id === id);
+            if (task) task.done = !task.done;
+            renderDashboard();
+        }
+
+        // --- Core Systems (Clock, Navigation, Screensaver) ---
+        function updateDateTime() {
+            const now = new Date();
+            const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+            const timeStr = now.toLocaleTimeString('en-US', timeOptions);
+            
+            document.getElementById('clock-display').textContent = timeStr;
+            document.getElementById('screensaver-time').textContent = timeStr.replace(/\s[AP]M/, '');
+
+            const dateOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+            document.getElementById('current-date-full').textContent = now.toLocaleDateString('en-US', dateOptions);
+            document.getElementById('screensaver-date').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            
+            const hour = now.getHours();
+            const greetingEl = document.getElementById('greeting');
+            if (hour < 12) greetingEl.textContent = "Good Morning!";
+            else if (hour < 18) greetingEl.textContent = "Good Afternoon!";
+            else greetingEl.textContent = "Good Evening!";
+        }
+
+        function switchTab(viewId) {
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+                item.classList.add('text-slate-400');
+            });
+            document.getElementById('nav-' + viewId).classList.add('active');
+            document.getElementById('nav-' + viewId).classList.remove('text-slate-400');
+
+            ['dashboard', 'calendar', 'tasks', 'meals'].forEach(v => {
+                document.getElementById(v + '-view').classList.add('hidden');
+            });
+            document.getElementById(viewId + '-view').classList.remove('hidden');
+            document.getElementById('screensaver').style.display = 'none';
+        }
+
+        const photoUrls = [
+            'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2000',
+            'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2000',
+            'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2000'
+        ];
+        let currentPhotoIdx = 0;
+
+        function startScreensaver() {
+            const ss = document.getElementById('screensaver');
+            ss.style.display = 'flex';
+            rotatePhoto();
+        }
+
+        function rotatePhoto() {
+            const ss = document.getElementById('screensaver');
+            ss.style.backgroundImage = `url('${photoUrls[currentPhotoIdx]}')`;
+            currentPhotoIdx = (currentPhotoIdx + 1) % photoUrls.length;
+        }
+
+        document.getElementById('screensaver').addEventListener('click', () => {
+            document.getElementById('screensaver').style.display = 'none';
+            resetIdleTimer();
+        });
+
+        // Initialize
+        setInterval(updateDateTime, 1000);
+        setInterval(() => {
+            if (document.getElementById('screensaver').style.display === 'flex') rotatePhoto();
+        }, 30000);
+
+        // Auto-screensaver (Idle timeout)
+        let idleTimer;
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(startScreensaver, 600000); // 10 minutes
+        }
+        ['touchstart', 'click', 'mousemove'].forEach(evt => window.addEventListener(evt, resetIdleTimer));
+
+        updateDateTime();
+        renderDashboard();
+        resetIdleTimer();
+    </script>
+</body>
+</html>
